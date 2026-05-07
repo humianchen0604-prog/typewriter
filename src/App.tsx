@@ -5,7 +5,7 @@ export default function App() {
   const [speed,      setSpeed]      = useState(70);    // ms per char
   const [fontSize,   setFontSize]   = useState(44);    // px
   const [headingGap, setHeadingGap] = useState(48);    // px
-  const [blinking,   setBlinking]   = useState(true);  // cursor blink
+  const [blinking,   setBlinking]   = useState(false); // cursor blink
 
   return (
     <>

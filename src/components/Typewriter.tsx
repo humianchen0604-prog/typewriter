@@ -39,7 +39,7 @@ function TikTokCursor({ blinking }: { blinking: boolean }) {
       setDim(false);      // reset to full opacity when toggled off
       return;
     }
-    const id = setInterval(() => setDim(d => !d), 600);
+    const id = setInterval(() => setDim(d => !d), 400);
     return () => clearInterval(id);
   }, [blinking]);
 
@@ -81,7 +81,7 @@ function TikTokCursor({ blinking }: { blinking: boolean }) {
         verticalAlign: 'middle',
         transform: 'translateY(-0.1em)',
         opacity,
-        transition: 'opacity 0.3s ease-in-out',
+        transition: 'opacity 0.2s ease-in-out',
       }}
     >
       {svgLayer('#24f6f0',  2, -2, 'screen', 0.9)}
