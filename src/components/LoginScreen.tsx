@@ -11,6 +11,7 @@ interface LoginScreenProps {
   fontSize:    number;
   headingGap:  number;
   blinking:    boolean;
+  blinkSpeed:  number;
 }
 
 const ttStyle = (weight: 400 | 600 | 800): CSSProperties => ({
@@ -69,7 +70,7 @@ function calcHeadingHeight(fs: number) {
   return Math.ceil(fs * 1.2 * 2) + 6;
 }
 
-export default function LoginScreen({ typingSpeed, fontSize, headingGap, blinking }: LoginScreenProps) {
+export default function LoginScreen({ typingSpeed, fontSize, headingGap, blinking, blinkSpeed }: LoginScreenProps) {
   const headingHeight = calcHeadingHeight(fontSize);
   return (
     <div style={{ background: 'white', width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
@@ -146,6 +147,7 @@ export default function LoginScreen({ typingSpeed, fontSize, headingGap, blinkin
             delayBeforeDelete={2500}
             fontSize={fontSize}
             blinking={blinking}
+            blinkSpeed={blinkSpeed}
           />
         </div>
 

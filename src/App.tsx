@@ -6,6 +6,7 @@ export default function App() {
   const [fontSize,   setFontSize]   = useState(44);    // px
   const [headingGap, setHeadingGap] = useState(48);    // px
   const [blinking,   setBlinking]   = useState(false); // cursor blink
+  const [blinkSpeed, setBlinkSpeed] = useState(400);  // ms per blink cycle
 
   return (
     <>
@@ -24,6 +25,7 @@ export default function App() {
           fontSize={fontSize}
           headingGap={headingGap}
           blinking={blinking}
+          blinkSpeed={blinkSpeed}
         />
       </div>
 
@@ -145,6 +147,27 @@ export default function App() {
               boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
             }} />
           </button>
+        </div>
+
+        {/* ── Blink speed ───────────────────────────────────── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#222' }}>Blink Speed</span>
+            <span style={{ fontSize: 11, color: '#999' }}>{blinkSpeed} ms</span>
+          </div>
+          <input
+            type="range"
+            min={100}
+            max={1000}
+            step={50}
+            value={blinkSpeed}
+            onChange={e => setBlinkSpeed(Number(e.target.value))}
+            style={{ width: '100%', accentColor: '#fe2c55', cursor: 'pointer' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 10, color: '#bbb' }}>Fast</span>
+            <span style={{ fontSize: 10, color: '#bbb' }}>Slow</span>
+          </div>
         </div>
 
       </div>
