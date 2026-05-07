@@ -30,12 +30,28 @@ interface TypewriterProps {
 //   Layer 2:          red  #fe2c55, top  0px left +2px, mix-blend-mode screen
 //   Layer 3 (top):    black,        top  0px left  0px
 function TikTokCursor({ blinking }: { blinking: boolean }) {
+  // React-driven blink: toggle opacity every 600 ms when blinking is on.
+  // This is more reliable than CSS animation toggled via inline style.
+  const [dim, setDim] = useState(false);
+
+  useEffect(() => {
+    if (!blinking) {
+      setDim(false);      // reset to full opacity when toggled off
+      return;
+    }
+    const id = setInterval(() => setDim(d => !d), 600);
+    return () => clearInterval(id);
+  }, [blinking]);
+
+  // Full opacity = 1, dim = 80 % of that
+  const opacity = dim ? 0.8 : 1;
+
   const svgLayer = (
     fill: string,
     top: number,
     left: number,
     blend?: React.CSSProperties['mixBlendMode'],
-    opacity?: number,
+    svgOpacity?: number,
   ) => (
     <svg
       viewBox="0 0 448 512"
@@ -45,8 +61,8 @@ function TikTokCursor({ blinking }: { blinking: boolean }) {
         left,
         width: '100%',
         height: '100%',
-        ...(blend   ? { mixBlendMode: blend }  : {}),
-        ...(opacity !== undefined ? { opacity } : {}),
+        ...(blend      ? { mixBlendMode: blend } : {}),
+        ...(svgOpacity !== undefined ? { opacity: svgOpacity } : {}),
       }}
     >
       <path d={TIKTOK_PATH} fill={fill} />
@@ -63,8 +79,8 @@ function TikTokCursor({ blinking }: { blinking: boolean }) {
         marginLeft: 4,
         verticalAlign: 'middle',
         transform: 'translateY(-0.1em)',
-        opacity: 0.9,
-        animation: blinking ? 'cursor-pulse 1.2s ease-in-out infinite' : 'none',
+        opacity,
+        transition: 'opacity 0.3s ease-in-out',
       }}
     >
       {svgLayer('#24f6f0',  2, -2, 'screen', 0.9)}
