@@ -50,10 +50,10 @@ body {
 
 button { outline: none; }
 
-/* ── Typewriter cursor pulse ──────────────────────────── */
+/* ── Typewriter cursor blink ──────────────────────────── */
 @keyframes cursor-pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
+  50%       { opacity: 0.8; }
 }
 
 /* ── Per-character enter animation ───────────────────── */

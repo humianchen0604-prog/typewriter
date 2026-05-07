@@ -21,6 +21,7 @@ interface TypewriterProps {
   delayBeforeType?:    number;   // pause before next string, default 500
   playSound?:          boolean;
   fontSize?:           number;   // px, default 44
+  blinking?:           boolean;  // cursor blink on/off, default true
 }
 
 // ── 3-layer TikTok cursor ─────────────────────────────────────────────────
@@ -28,7 +29,7 @@ interface TypewriterProps {
 //   Layer 1 (bottom): cyan #24f6f0, top +2px left -2px, mix-blend-mode screen
 //   Layer 2:          red  #fe2c55, top  0px left +2px, mix-blend-mode screen
 //   Layer 3 (top):    black,        top  0px left  0px
-function TikTokCursor() {
+function TikTokCursor({ blinking }: { blinking: boolean }) {
   const svgLayer = (
     fill: string,
     top: number,
@@ -63,6 +64,7 @@ function TikTokCursor() {
         verticalAlign: 'middle',
         transform: 'translateY(-0.1em)',
         opacity: 0.9,
+        animation: blinking ? 'cursor-pulse 1.2s ease-in-out infinite' : 'none',
       }}
     >
       {svgLayer('#24f6f0',  2, -2, 'screen', 0.9)}
@@ -81,6 +83,7 @@ export default function Typewriter({
   delayBeforeType   = 500,
   playSound         = false,
   fontSize          = 44,
+  blinking          = true,
 }: TypewriterProps) {
   // ── Core display state ────────────────────────────────────────────────
   // displayText holds all settled characters; rendered as a plain text node
@@ -248,7 +251,7 @@ export default function Typewriter({
         </span>
       )}
 
-      <TikTokCursor />
+      <TikTokCursor blinking={blinking} />
     </p>
   );
 }

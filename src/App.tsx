@@ -2,9 +2,10 @@ import { useState } from 'react';
 import LoginScreen from './components/LoginScreen';
 
 export default function App() {
-  const [speed,      setSpeed]      = useState(70);   // ms per char
-  const [fontSize,   setFontSize]   = useState(44);   // px
-  const [headingGap, setHeadingGap] = useState(48);   // px
+  const [speed,      setSpeed]      = useState(70);    // ms per char
+  const [fontSize,   setFontSize]   = useState(44);    // px
+  const [headingGap, setHeadingGap] = useState(48);    // px
+  const [blinking,   setBlinking]   = useState(true);  // cursor blink
 
   return (
     <>
@@ -22,6 +23,7 @@ export default function App() {
           typingSpeed={speed}
           fontSize={fontSize}
           headingGap={headingGap}
+          blinking={blinking}
         />
       </div>
 
@@ -118,6 +120,31 @@ export default function App() {
             <span style={{ fontSize: 10, color: '#bbb' }}>Tight</span>
             <span style={{ fontSize: 10, color: '#bbb' }}>Spacious</span>
           </div>
+        </div>
+
+        <div style={{ height: 1, background: 'rgba(0,0,0,0.06)' }} />
+
+        {/* ── Cursor blink toggle ───────────────────────────── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#222' }}>Cursor Blink</span>
+          <button
+            role="switch"
+            aria-checked={blinking}
+            onClick={() => setBlinking(b => !b)}
+            style={{
+              width: 44, height: 26, borderRadius: 13, border: 'none',
+              background: blinking ? '#fe2c55' : '#ddd',
+              cursor: 'pointer', position: 'relative', flexShrink: 0,
+              transition: 'background 0.2s ease',
+            }}
+          >
+            <span style={{
+              position: 'absolute', top: 2, left: blinking ? 20 : 2,
+              width: 22, height: 22, borderRadius: '50%', background: '#fff',
+              transition: 'left 0.2s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+            }} />
+          </button>
         </div>
 
       </div>

@@ -9,7 +9,8 @@ const TYPEWRITER_TEXTS = [
 interface LoginScreenProps {
   typingSpeed: number;
   fontSize:    number;
-  headingGap:  number;  // px gap between typewriter text and action block
+  headingGap:  number;
+  blinking:    boolean;
 }
 
 const ttStyle = (weight: 400 | 600 | 800): CSSProperties => ({
@@ -68,7 +69,7 @@ function calcHeadingHeight(fs: number) {
   return Math.ceil(fs * 1.2 * 2) + 6;
 }
 
-export default function LoginScreen({ typingSpeed, fontSize, headingGap }: LoginScreenProps) {
+export default function LoginScreen({ typingSpeed, fontSize, headingGap, blinking }: LoginScreenProps) {
   const headingHeight = calcHeadingHeight(fontSize);
   return (
     <div style={{ background: 'white', width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
@@ -144,6 +145,7 @@ export default function LoginScreen({ typingSpeed, fontSize, headingGap }: Login
             deletingSpeed={30}
             delayBeforeDelete={2500}
             fontSize={fontSize}
+            blinking={blinking}
           />
         </div>
 
