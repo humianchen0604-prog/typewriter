@@ -1,0 +1,83 @@
+@font-face {
+  font-family: 'TikTok Sans';
+  src: url('/fonts/TikTokSans16pt-Regular.woff2') format('woff2'),
+       url('/fonts/TikTokSans16pt-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TikTok Sans';
+  src: url('/fonts/TikTokSans16pt-SemiBold.woff2') format('woff2'),
+       url('/fonts/TikTokSans16pt-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TikTok Sans';
+  src: url('/fonts/TikTokSans36pt-ExtraBold.woff2') format('woff2'),
+       url('/fonts/TikTokSans36pt-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: #F2F2F2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+#root {
+  display: contents;
+}
+
+button { outline: none; }
+
+/* ── Typewriter cursor pulse ──────────────────────────── */
+@keyframes cursor-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+/* ── Per-character enter animation ───────────────────── */
+/* 90 % opacity → 100 %, 95 % scale → 100 %             */
+@keyframes char-in {
+  from {
+    opacity: 0.9;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Per-character exit animation ────────────────────── */
+/* mirrors enter in reverse                               */
+@keyframes char-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.9;
+    transform: scale(0.95);
+  }
+}
