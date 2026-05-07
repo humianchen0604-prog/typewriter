@@ -43,8 +43,9 @@ function TikTokCursor({ blinking }: { blinking: boolean }) {
     return () => clearInterval(id);
   }, [blinking]);
 
-  // Full opacity = 1, dim = 80 % of that
-  const opacity = dim ? 0.8 : 1;
+  // Blink on: alternates 80% → 0% → 80%
+  // Blink off: stays at 0.9 (always visible)
+  const opacity = blinking ? (dim ? 0 : 0.8) : 0.9;
 
   const svgLayer = (
     fill: string,
