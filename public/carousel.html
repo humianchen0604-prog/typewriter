@@ -246,55 +246,6 @@
       width: 100%; cursor: pointer; accent-color: #fe2c55;
     }
 
-    /* ── Bottom controls (toggle + start) ───────────────────── */
-    .bottom-controls {
-      position: fixed;
-      top: 24px;
-      left: 24px;
-      z-index: 200;
-      user-select: none;
-    }
-    .mode-toggle {
-      background: #fff;
-      border-radius: 999px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-      display: flex;
-      padding: 4px;
-      gap: 2px;
-    }
-    .mode-btn {
-      padding: 10px 28px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-family: system-ui, sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      color: #888;
-      background: transparent;
-      transition: background 0.2s ease, color 0.2s ease;
-      white-space: nowrap;
-    }
-    .mode-btn.active {
-      background: #000;
-      color: #fff;
-    }
-    .start-btn {
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: 13px 0;
-      width: 100%;
-      font-family: system-ui, sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.15s ease, transform 0.15s ease;
-      letter-spacing: 0.02em;
-    }
-    .start-btn:hover  { opacity: 0.85; }
-    .start-btn:active { transform: scale(0.98); }
   </style>
 </head>
 <body>
@@ -376,22 +327,6 @@
 
 </div><!-- /frame -->
 
-<!-- Full-screen iframe for Typewriter tab (index.html / React app) -->
-<iframe
-  id="tw-iframe"
-  src="/"
-  style="display:none;position:fixed;inset:0;width:100%;height:100%;border:none;z-index:100;"
-></iframe>
-
-<!-- Bottom controls: mode selector + Start confirmation button -->
-<!-- Mode toggle — top-left corner only -->
-<div class="bottom-controls">
-  <div class="mode-toggle">
-    <button class="mode-btn"        id="btn-typewriter">Typewriter</button>
-    <button class="mode-btn active" id="btn-carousel">Carousel</button>
-  </div>
-</div>
-
 <!-- Controls panel -->
 <div class="controls">
   <p class="ctrl-section-label">Controls</p>
@@ -424,30 +359,23 @@
     </div>
   </div>
 
-  <div class="ctrl-divider"></div>
-
-  <!-- Start button — confirms the pending mode choice -->
-  <button class="start-btn" id="start-btn">Start</button>
 </div>
 
 <script>
   // ── Config ───────────────────────────────────────────────────
   let displayDuration = 2200;
   let currentFontSize = 32;
-  let mode = 'carousel';   // default: show carousel
 
   const FRAME_WIDTH = 390;
   const SIDE_MARGIN = 24;
   const MAX_WIDTH   = FRAME_WIDTH - SIDE_MARGIN * 2; // 342px
   const ACTION_GAP  = 42;
 
-  const heading    = document.querySelector('.heading');
-  const wordClip   = document.querySelector('.word-clip');
-  const action     = document.querySelector('.action');
-  const frameEl    = document.querySelector('.frame');
-  const controlsEl = document.querySelector('.controls');
-  const iframe     = document.getElementById('tw-iframe');
-  const el         = document.getElementById('word-span');
+  const heading  = document.querySelector('.heading');
+  const wordClip = document.querySelector('.word-clip');
+  const action   = document.querySelector('.action');
+  const frameEl  = document.querySelector('.frame');
+  const el       = document.getElementById('word-span');
 
   const WORDS = [
     { text: 'happening', color: '#fe2c55' },
@@ -517,57 +445,24 @@
         el.className = 'word-span word-enter';
         t3 = setTimeout(() => {
           el.className = 'word-span word-visible';
-          if (mode === 'carousel') carousel();
+          carousel();
         }, 400);
       }, 300);
     }, displayDuration);
   }
 
-  // ── Page-level mode switching ─────────────────────────────────
-  // pendingMode = what the user has tapped (highlighted in toggle)
-  // mode        = what is actually running (confirmed by Start)
-  let pendingMode = 'carousel';
+  // Boot
+  setWord(idx);
+  el.className = 'word-span word-visible';
+  carousel();
 
-  function selectPending(m) {
-    pendingMode = m;
-    document.getElementById('btn-typewriter').classList.toggle('active', pendingMode === 'typewriter');
-    document.getElementById('btn-carousel').classList.toggle('active',   pendingMode === 'carousel');
-  }
-
-  function setMode(newMode) {
-    stopCarousel();
-    mode = newMode;
-
-    const isCarousel = mode === 'carousel';
-
-    iframe.style.display     = isCarousel ? 'none' : 'block';
-    frameEl.style.display    = isCarousel ? ''     : 'none';
-    controlsEl.style.display = isCarousel ? ''     : 'none';
-
-    if (isCarousel) {
-      setWord(idx);
-      el.className = 'word-span word-visible';
-      carousel();
-    }
-  }
-
-  // Boot: start in carousel mode (no confirmation needed on first load)
-  setMode('carousel');
-
-  // ── Toggle buttons — only update pending selection ────────────
-  document.getElementById('btn-typewriter').addEventListener('click', () => selectPending('typewriter'));
-  document.getElementById('btn-carousel').addEventListener('click',   () => selectPending('carousel'));
-
-  // ── Start button — confirm and apply the pending choice ───────
-  document.getElementById('start-btn').addEventListener('click', () => setMode(pendingMode));
-
-  // ── Controls sliders (carousel only) ─────────────────────────
+  // ── Controls sliders ──────────────────────────────────────────
   const speedSlider = document.getElementById('speed-slider');
   const speedVal    = document.getElementById('speed-val');
   speedSlider.addEventListener('input', () => {
     displayDuration = +speedSlider.value;
     speedVal.textContent = displayDuration + ' ms';
-    if (mode === 'carousel') { stopCarousel(); carousel(); }
+    stopCarousel(); carousel();
   });
 
   const fontSlider = document.getElementById('font-slider');
