@@ -246,19 +246,26 @@
       width: 100%; cursor: pointer; accent-color: #fe2c55;
     }
 
-    /* ── Mode toggle ─────────────────────────────────────────── */
-    .mode-toggle {
+    /* ── Bottom controls (toggle + start) ───────────────────── */
+    .bottom-controls {
       position: fixed;
       bottom: 36px;
       left: 50%;
       transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      z-index: 200;
+      user-select: none;
+    }
+    .mode-toggle {
       background: #fff;
       border-radius: 999px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
       display: flex;
       padding: 4px;
       gap: 2px;
-      user-select: none;
     }
     .mode-btn {
       padding: 10px 28px;
@@ -277,6 +284,23 @@
       background: #000;
       color: #fff;
     }
+    .start-btn {
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 52px;
+      font-family: system-ui, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+    .start-btn:hover  { opacity: 0.88; }
+    .start-btn:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
@@ -365,10 +389,13 @@
   style="display:none;position:fixed;inset:0;width:100%;height:100%;border:none;z-index:100;"
 ></iframe>
 
-<!-- Mode toggle — always on top of everything -->
-<div class="mode-toggle" style="z-index:200;">
-  <button class="mode-btn"        id="btn-typewriter">Typewriter</button>
-  <button class="mode-btn active" id="btn-carousel">Carousel</button>
+<!-- Bottom controls: mode selector + Start confirmation button -->
+<div class="bottom-controls">
+  <div class="mode-toggle">
+    <button class="mode-btn"        id="btn-typewriter">Typewriter</button>
+    <button class="mode-btn active" id="btn-carousel">Carousel</button>
+  </div>
+  <button class="start-btn" id="start-btn">Start</button>
 </div>
 
 <!-- Controls panel -->
@@ -498,23 +525,25 @@
   }
 
   // ── Page-level mode switching ─────────────────────────────────
-  // Typewriter tab → full-screen iframe of index.html (React app + its own UI)
-  // Carousel tab   → this page's carousel content + controls panel
+  // pendingMode = what the user has tapped (highlighted in toggle)
+  // mode        = what is actually running (confirmed by Start)
+  let pendingMode = 'carousel';
+
+  function selectPending(m) {
+    pendingMode = m;
+    document.getElementById('btn-typewriter').classList.toggle('active', pendingMode === 'typewriter');
+    document.getElementById('btn-carousel').classList.toggle('active',   pendingMode === 'carousel');
+  }
+
   function setMode(newMode) {
     stopCarousel();
     mode = newMode;
 
-    document.getElementById('btn-typewriter').classList.toggle('active', mode === 'typewriter');
-    document.getElementById('btn-carousel').classList.toggle('active',   mode === 'carousel');
-
     const isCarousel = mode === 'carousel';
 
-    // Typewriter → show iframe (React app fills entire viewport)
-    iframe.style.display = isCarousel ? 'none' : 'block';
-
-    // Carousel → show phone frame + controls
-    frameEl.style.display    = isCarousel ? '' : 'none';
-    controlsEl.style.display = isCarousel ? '' : 'none';
+    iframe.style.display     = isCarousel ? 'none' : 'block';
+    frameEl.style.display    = isCarousel ? ''     : 'none';
+    controlsEl.style.display = isCarousel ? ''     : 'none';
 
     if (isCarousel) {
       setWord(idx);
@@ -523,12 +552,15 @@
     }
   }
 
-  // Boot: carousel is default
+  // Boot: start in carousel mode (no confirmation needed on first load)
   setMode('carousel');
 
-  // ── Toggle buttons ────────────────────────────────────────────
-  document.getElementById('btn-typewriter').addEventListener('click', () => setMode('typewriter'));
-  document.getElementById('btn-carousel').addEventListener('click',   () => setMode('carousel'));
+  // ── Toggle buttons — only update pending selection ────────────
+  document.getElementById('btn-typewriter').addEventListener('click', () => selectPending('typewriter'));
+  document.getElementById('btn-carousel').addEventListener('click',   () => selectPending('carousel'));
+
+  // ── Start button — confirm and apply the pending choice ───────
+  document.getElementById('start-btn').addEventListener('click', () => setMode(pendingMode));
 
   // ── Controls sliders (carousel only) ─────────────────────────
   const speedSlider = document.getElementById('speed-slider');
