@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import LoginScreen from './components/LoginScreen';
 
-// Navigate to carousel — if we're inside an iframe (carousel.html's typewriter tab),
-// break out to the top-level window so carousel.html loads at the top level.
-function goToCarousel() {
-  const target = window.top !== window.self ? window.top : window;
-  if (target) target.location.href = '/carousel.html';
-}
 
 export default function App() {
   const [speed,      setSpeed]      = useState(70);    // ms per char
@@ -179,54 +173,6 @@ export default function App() {
 
       </div>
 
-      {/* ── Mode toggle — fixed at bottom, always on top ──────── */}
-      <div style={{
-        position: 'fixed',
-        bottom: 36,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        background: '#fff',
-        borderRadius: 999,
-        boxShadow: '0 4px 20px rgba(0,0,0,0.14)',
-        display: 'flex',
-        padding: 4,
-        gap: 2,
-        zIndex: 200,
-        userSelect: 'none',
-      }}>
-        {/* Typewriter — active (this page) */}
-        <div style={{
-          padding: '10px 28px',
-          borderRadius: 999,
-          background: '#000',
-          color: '#fff',
-          fontSize: 14,
-          fontWeight: 600,
-          fontFamily: 'system-ui, sans-serif',
-          whiteSpace: 'nowrap',
-        }}>
-          Typewriter
-        </div>
-
-        {/* Carousel — navigates to carousel.html */}
-        <button
-          onClick={goToCarousel}
-          style={{
-            padding: '10px 28px',
-            borderRadius: 999,
-            border: 'none',
-            background: 'transparent',
-            color: '#888',
-            fontSize: 14,
-            fontWeight: 600,
-            fontFamily: 'system-ui, sans-serif',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          Carousel
-        </button>
-      </div>
     </>
   );
 }
