@@ -136,7 +136,7 @@ export default function LoginScreen({ typingSpeed, fontSize, headingGap, blinkin
         <div style={{
           width: 310, alignSelf: 'flex-start',
           height: headingHeight,
-          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
           overflow: 'visible',
           flexShrink: 0,
         }}>
