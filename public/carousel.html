@@ -358,10 +358,17 @@
 
 </div><!-- /frame -->
 
-<!-- Mode toggle -->
-<div class="mode-toggle">
-  <button class="mode-btn active" id="btn-typewriter">Typewriter</button>
-  <button class="mode-btn"        id="btn-carousel">Carousel</button>
+<!-- Full-screen iframe for Typewriter tab (index.html / React app) -->
+<iframe
+  id="tw-iframe"
+  src="/"
+  style="display:none;position:fixed;inset:0;width:100%;height:100%;border:none;z-index:100;"
+></iframe>
+
+<!-- Mode toggle — always on top of everything -->
+<div class="mode-toggle" style="z-index:200;">
+  <button class="mode-btn"        id="btn-typewriter">Typewriter</button>
+  <button class="mode-btn active" id="btn-carousel">Carousel</button>
 </div>
 
 <!-- Controls panel -->
@@ -401,18 +408,20 @@
   // ── Config ───────────────────────────────────────────────────
   let displayDuration = 2200;
   let currentFontSize = 32;
-  let mode = 'typewriter';        // 'typewriter' | 'carousel'
+  let mode = 'carousel';   // default: show carousel
 
   const FRAME_WIDTH = 390;
   const SIDE_MARGIN = 24;
   const MAX_WIDTH   = FRAME_WIDTH - SIDE_MARGIN * 2; // 342px
   const ACTION_GAP  = 42;
 
-  const heading  = document.querySelector('.heading');
-  const wordClip = document.querySelector('.word-clip');
-  const action   = document.querySelector('.action');
-  const frame    = document.querySelector('.frame');
-  const el       = document.getElementById('word-span');
+  const heading    = document.querySelector('.heading');
+  const wordClip   = document.querySelector('.word-clip');
+  const action     = document.querySelector('.action');
+  const frameEl    = document.querySelector('.frame');
+  const controlsEl = document.querySelector('.controls');
+  const iframe     = document.getElementById('tw-iframe');
+  const el         = document.getElementById('word-span');
 
   const WORDS = [
     { text: 'happening', color: '#fe2c55' },
@@ -436,7 +445,7 @@
 
   // ── Action block positioning ──────────────────────────────────
   function updateActionPosition() {
-    const frameTop      = frame.getBoundingClientRect().top;
+    const frameTop      = frameEl.getBoundingClientRect().top;
     const headingBottom = heading.getBoundingClientRect().bottom;
     action.style.top = (headingBottom - frameTop + ACTION_GAP) + 'px';
   }
@@ -444,7 +453,7 @@
   // ── Font size ─────────────────────────────────────────────────
   function applyFontSize(fontSize) {
     currentFontSize = fontSize;
-    heading.style.fontSize = fontSize + 'px';
+    heading.style.fontSize  = fontSize + 'px';
     wordClip.style.minWidth = measureText('happening', fontSize) + 'px';
     const fullW = measureText("See what's happening", fontSize);
     if (fullW > MAX_WIDTH) {
@@ -461,17 +470,16 @@
 
   document.fonts.ready.then(() => applyFontSize(currentFontSize));
 
-  // ── Shared helpers ────────────────────────────────────────────
-  function setWord(i) {
-    el.textContent = WORDS[i].text;
-    el.style.color = WORDS[i].color;
-  }
-
-  // ── CAROUSEL mode ─────────────────────────────────────────────
+  // ── Carousel animation ────────────────────────────────────────
   let t1 = null, t2 = null, t3 = null;
 
   function stopCarousel() {
     clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+  }
+
+  function setWord(i) {
+    el.textContent = WORDS[i].text;
+    el.style.color = WORDS[i].color;
   }
 
   function carousel() {
@@ -489,89 +497,48 @@
     }, displayDuration);
   }
 
-  // ── TYPEWRITER mode ───────────────────────────────────────────
-  const TW_TYPE_MS   = 80;   // ms per character typed
-  const TW_DELETE_MS = 40;   // ms per character deleted
-  let twTimer = null;
-
-  function stopTypewriter() { clearTimeout(twTimer); }
-
-  function typewriter() {
-    if (mode !== 'typewriter') return;
-    const word = WORDS[idx].text;
-    el.style.color   = WORDS[idx].color;
-    el.className     = 'word-span word-visible';
-
-    // Type forward
-    let i = 0;
-    function typeNext() {
-      if (mode !== 'typewriter') return;
-      el.textContent = word.slice(0, ++i);
-      if (i < word.length) {
-        twTimer = setTimeout(typeNext, TW_TYPE_MS);
-      } else {
-        // Pause then delete
-        twTimer = setTimeout(deleteNext, displayDuration);
-      }
-    }
-
-    // Delete backward
-    let d = word.length;
-    function deleteNext() {
-      if (mode !== 'typewriter') return;
-      el.textContent = word.slice(0, --d);
-      if (d > 0) {
-        twTimer = setTimeout(deleteNext, TW_DELETE_MS);
-      } else {
-        // Next word
-        idx = (idx + 1) % WORDS.length;
-        twTimer = setTimeout(typewriter, 400);
-      }
-    }
-
-    typeNext();
-  }
-
-  // ── Mode switching ────────────────────────────────────────────
-  function startMode(newMode) {
+  // ── Page-level mode switching ─────────────────────────────────
+  // Typewriter tab → full-screen iframe of index.html (React app + its own UI)
+  // Carousel tab   → this page's carousel content + controls panel
+  function setMode(newMode) {
     stopCarousel();
-    stopTypewriter();
     mode = newMode;
 
-    // Update toggle button styles
     document.getElementById('btn-typewriter').classList.toggle('active', mode === 'typewriter');
     document.getElementById('btn-carousel').classList.toggle('active',   mode === 'carousel');
 
-    // Reset to clean state
-    el.className   = 'word-span word-visible';
-    el.textContent = '';
+    const isCarousel = mode === 'carousel';
 
-    if (mode === 'carousel') {
+    // Typewriter → show iframe (React app fills entire viewport)
+    iframe.style.display = isCarousel ? 'none' : 'block';
+
+    // Carousel → show phone frame + controls
+    frameEl.style.display    = isCarousel ? '' : 'none';
+    controlsEl.style.display = isCarousel ? '' : 'none';
+
+    if (isCarousel) {
       setWord(idx);
+      el.className = 'word-span word-visible';
       carousel();
-    } else {
-      typewriter();
     }
   }
 
-  // Boot in typewriter mode
-  startMode('typewriter');
+  // Boot: carousel is default
+  setMode('carousel');
 
-  // ── Controls wiring ──────────────────────────────────────────
-  document.getElementById('btn-typewriter').addEventListener('click', () => startMode('typewriter'));
-  document.getElementById('btn-carousel').addEventListener('click',   () => startMode('carousel'));
+  // ── Toggle buttons ────────────────────────────────────────────
+  document.getElementById('btn-typewriter').addEventListener('click', () => setMode('typewriter'));
+  document.getElementById('btn-carousel').addEventListener('click',   () => setMode('carousel'));
 
-  // Speed slider — takes effect immediately in both modes
+  // ── Controls sliders (carousel only) ─────────────────────────
   const speedSlider = document.getElementById('speed-slider');
   const speedVal    = document.getElementById('speed-val');
   speedSlider.addEventListener('input', () => {
     displayDuration = +speedSlider.value;
     speedVal.textContent = displayDuration + ' ms';
-    // Restart current mode at new speed
-    startMode(mode);
+    if (mode === 'carousel') { stopCarousel(); carousel(); }
   });
 
-  // Font size slider
   const fontSlider = document.getElementById('font-slider');
   const fontVal    = document.getElementById('font-val');
   fontSlider.addEventListener('input', () => {
