@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>See what's happening · TikTok</title>
+  <style>
+    /* ── Fonts ──────────────────────────────────────────────── */
+    @font-face {
+      font-family: 'TikTok Sans';
+      src: url('/fonts/TikTokSans16pt-Regular.woff2') format('woff2'),
+           url('/fonts/TikTokSans16pt-Regular.ttf') format('truetype');
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'TikTok Sans';
+      src: url('/fonts/TikTokSans16pt-SemiBold.woff2') format('woff2'),
+           url('/fonts/TikTokSans16pt-SemiBold.ttf') format('truetype');
+      font-weight: 600; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'TikTok Sans';
+      src: url('/fonts/TikTokSans16pt-Bold.woff2') format('woff2'),
+           url('/fonts/TikTokSans16pt-Bold.ttf') format('truetype');
+      font-weight: 700; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'TikTok Sans';
+      src: url('/fonts/TikTokSans36pt-ExtraBold.woff2') format('woff2'),
+           url('/fonts/TikTokSans36pt-ExtraBold.ttf') format('truetype');
+      font-weight: 800; font-style: normal; font-display: swap;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'TikTok Sans', system-ui, sans-serif;
+      background: #F2F2F2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    /* ── Phone frame ─────────────────────────────────────────── */
+    .frame {
+      width: 390px;
+      height: 844px;
+      background: #fff;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.14);
+      flex-shrink: 0;
+    }
+
+    /* ── Status bar ──────────────────────────────────────────── */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0;
+      width: 390px; height: 47px;
+      overflow: hidden;
+    }
+    .status-time {
+      position: absolute;
+      left: 64px; top: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      font-size: 17px; font-weight: 600; line-height: 1.3;
+      color: black; white-space: nowrap;
+    }
+    .status-signal  { position: absolute; display: block; width: 21.3px;  height: 12.8px; right: 84.7px;  top: 50%; transform: translateY(calc(-50% + 2.1px)); }
+    .status-wifi    { position: absolute; display: block; width: 17.68px; height: 13px;   right: 60.32px; top: 50%; transform: translateY(calc(-50% + 2px)); }
+    .status-battery { position: absolute; display: block; width: 29.4px;  height: 14px;   right: 25.57px; top: 50%; transform: translateY(calc(-50% + 2.5px)); }
+
+    /* ── Navigation bar ──────────────────────────────────────── */
+    .nav-bar {
+      position: absolute;
+      top: 47px; left: 0;
+      width: 390px; height: 44px;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: 0 6px;
+    }
+    .nav-btn {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-btn img { width: 24px; height: 24px; display: block; }
+
+    /* ── TikTok wordmark PNG ─────────────────────────────────── */
+    .tiktok-wordmark {
+      position: absolute;
+      top: 109.53px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 23px;
+      width: auto;
+      display: block;
+    }
+
+    /* ── Heading ─────────────────────────────────────────────── */
+    /* Figma: top=268, centered, w=342, 32px Bold, line-height 1.2 */
+    .heading {
+      position: absolute;
+      top: 268px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: black;
+      white-space: nowrap;
+    }
+
+    /* Clipping window for the animated word — departure-board style.
+       min-width is set to the exact rendered width of "happening" via JS
+       after fonts load, so the heading width never changes between words. */
+    .word-clip {
+      display: inline-block;
+      height: 1.2em;
+      overflow: hidden;
+      vertical-align: top;
+    }
+    .word-span {
+      display: block;
+    }
+
+    /* ── Carousel keyframes (from reference App.tsx) ─────────── */
+    @keyframes slideOutUp {
+      from { transform: translateY(0);     opacity: 1; }
+      to   { transform: translateY(-110%); opacity: 0; }
+    }
+    @keyframes slideInUp {
+      from { transform: translateY(110%);  opacity: 0; }
+      to   { transform: translateY(0);     opacity: 1; }
+    }
+    .word-exit    { animation: slideOutUp 400ms ease-in-out forwards; }
+    .word-enter   { animation: slideInUp  400ms ease-in-out forwards; }
+    .word-visible { transform: translateY(0); opacity: 1; }
+
+    /* ── Action block ────────────────────────────────────────── */
+    /* Figma: top=349, centered, w=342, gap=160px between input group and social */
+    .action {
+      position: absolute;
+      top: 349px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 342px;
+    }
+
+    /* Input + button */
+    .input-group { display: flex; flex-direction: column; gap: 12px; }
+
+    .input-field {
+      height: 56px;
+      background: #f8f8f8;
+      border: 0.5px solid rgba(0,0,0,0.12);
+      border-radius: 999px;
+      display: flex; align-items: center;
+      padding: 0 18px;
+      font-family: 'TikTok Sans', system-ui, sans-serif;
+      font-size: 17px; font-weight: 400;
+      color: rgba(0,0,0,0.34);
+    }
+
+    .btn-primary {
+      height: 56px;
+      background: black; border: none; border-radius: 999px;
+      color: white;
+      font-family: 'TikTok Sans', system-ui, sans-serif;
+      font-size: 17px; font-weight: 600;
+      cursor: pointer; width: 100%;
+    }
+
+    /* Social row — 160px below input group */
+    .social-row {
+      margin-top: 160px;
+      display: flex; gap: 20px;
+      align-items: center; justify-content: center;
+    }
+    .social-btn {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 0.538px solid rgba(0,0,0,0.12);
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .social-btn svg { width: 26px; height: 26px; display: block; }
+
+    /* ── Disclaimer ──────────────────────────────────────────── */
+    .disclaimer {
+      position: absolute;
+      top: 734px; left: 0;
+      width: 390px;
+      padding: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .disclaimer p {
+      font-size: 11px; font-weight: 400; line-height: 1.3;
+      color: rgba(0,0,0,0.48); text-align: center; width: 282px;
+    }
+    .disclaimer a { color: #2B5DB9; text-decoration: none; }
+
+    /* ── Home indicator ──────────────────────────────────────── */
+    .home-indicator {
+      position: absolute;
+      top: 810px; left: 0;
+      width: 390px; height: 34px;
+      display: flex; align-items: flex-end;
+      justify-content: center; padding-bottom: 9px;
+    }
+    .home-bar {
+      width: 134px; height: 5px;
+      background: black; border-radius: 100px;
+    }
+
+    /* ── Controls panel ──────────────────────────────────────── */
+    .controls {
+      position: fixed;
+      left: calc(50% + 355px);   /* right edge of phone (195px) + 160px gap */
+      top: 50%;
+      transform: translateY(-50%);
+      width: 220px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 24px 20px;
+      font-family: system-ui, sans-serif;
+    }
+    .ctrl-section-label {
+      font-size: 11px; font-weight: 700;
+      color: #aaa; letter-spacing: 0.08em;
+      text-transform: uppercase; margin: 0;
+    }
+    .ctrl-row { display: flex; flex-direction: column; gap: 10px; }
+    .ctrl-header { display: flex; justify-content: space-between; align-items: baseline; }
+    .ctrl-title { font-size: 13px; font-weight: 600; color: #222; }
+    .ctrl-value { font-size: 11px; color: #999; }
+    .ctrl-divider { height: 1px; background: rgba(0,0,0,0.06); }
+    .ctrl-hints { display: flex; justify-content: space-between; }
+    .ctrl-hint  { font-size: 10px; color: #bbb; }
+    input[type="range"] {
+      width: 100%; cursor: pointer; accent-color: #fe2c55;
+    }
+
+    /* ── Mode toggle ─────────────────────────────────────────── */
+    .mode-toggle {
+      position: fixed;
+      bottom: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border-radius: 999px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+      display: flex;
+      padding: 4px;
+      gap: 2px;
+      user-select: none;
+    }
+    .mode-btn {
+      padding: 10px 28px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #888;
+      background: transparent;
+      transition: background 0.2s ease, color 0.2s ease;
+      white-space: nowrap;
+    }
+    .mode-btn.active {
+      background: #000;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="status-time">8:00</span>
+    <img class="status-signal"  src="/assets/signal.png"     alt="" />
+    <img class="status-wifi"    src="/assets/connection.png" alt="" />
+    <img class="status-battery" src="/assets/battery.png"    alt="" />
+  </div>
+
+  <!-- Navigation bar -->
+  <div class="nav-bar">
+    <div class="nav-btn">
+      <img src="/assets/nav-help.png" alt="Help" />
+    </div>
+  </div>
+
+  <!-- TikTok wordmark -->
+  <img class="tiktok-wordmark" src="/assets/tiktok-logo-wordmark.png" alt="TikTok" />
+
+  <!-- Heading with animated word -->
+  <p class="heading">
+    <span>See what's&nbsp;</span><span class="word-clip"><span class="word-span word-visible" id="word-span">happening</span></span>
+  </p>
+
+  <!-- Action block -->
+  <div class="action">
+    <div class="input-group">
+      <div class="input-field">Phone number, email or username</div>
+      <button class="btn-primary">Get started</button>
+    </div>
+
+    <div class="social-row">
+      <!-- Apple -->
+      <button class="social-btn" aria-label="Continue with Apple">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path fill="#000" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83zM13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+        </svg>
+      </button>
+      <!-- Google -->
+      <button class="social-btn" aria-label="Continue with Google">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+      </button>
+      <!-- Facebook -->
+      <button class="social-btn" aria-label="Continue with Facebook">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="12" fill="#1877F2"/>
+          <path d="M16.67 15.47l.52-3.47h-3.33v-2.25c0-.95.46-1.87 1.96-1.87h1.51V4.99s-1.37-.23-2.69-.23c-2.74 0-4.53 1.66-4.53 4.67v2.57H7.08v3.47h3.03v8.39a12.1 12.1 0 0 0 3.75 0v-8.39h2.81z" fill="#fff"/>
+        </svg>
+      </button>
+      <!-- More -->
+      <button class="social-btn" aria-label="More options">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="5"  cy="12" r="2" fill="#000"/>
+          <circle cx="12" cy="12" r="2" fill="#000"/>
+          <circle cx="19" cy="12" r="2" fill="#000"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer">
+    <p>By signing up, you agree to our <a href="#">Terms of Service</a> and acknowledge that you have read our <a href="#">Privacy Policy</a>.</p>
+  </div>
+
+  <!-- Home indicator -->
+  <div class="home-indicator">
+    <div class="home-bar"></div>
+  </div>
+
+</div><!-- /frame -->
+
+<!-- Mode toggle -->
+<div class="mode-toggle">
+  <button class="mode-btn active" id="btn-typewriter">Typewriter</button>
+  <button class="mode-btn"        id="btn-carousel">Carousel</button>
+</div>
+
+<!-- Controls panel -->
+<div class="controls">
+  <p class="ctrl-section-label">Controls</p>
+
+  <!-- Switch speed -->
+  <div class="ctrl-row">
+    <div class="ctrl-header">
+      <span class="ctrl-title">Switch Speed</span>
+      <span class="ctrl-value" id="speed-val">2200 ms</span>
+    </div>
+    <input type="range" id="speed-slider" min="400" max="5000" step="100" value="2200" />
+    <div class="ctrl-hints">
+      <span class="ctrl-hint">Fast</span>
+      <span class="ctrl-hint">Slow</span>
+    </div>
+  </div>
+
+  <div class="ctrl-divider"></div>
+
+  <!-- Font size -->
+  <div class="ctrl-row">
+    <div class="ctrl-header">
+      <span class="ctrl-title">Font Size</span>
+      <span class="ctrl-value" id="font-val">32 px</span>
+    </div>
+    <input type="range" id="font-slider" min="16" max="60" step="1" value="32" />
+    <div class="ctrl-hints">
+      <span class="ctrl-hint">Small</span>
+      <span class="ctrl-hint">Large</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Config ───────────────────────────────────────────────────
+  let displayDuration = 2200;
+  let currentFontSize = 32;
+  let mode = 'typewriter';        // 'typewriter' | 'carousel'
+
+  const FRAME_WIDTH = 390;
+  const SIDE_MARGIN = 24;
+  const MAX_WIDTH   = FRAME_WIDTH - SIDE_MARGIN * 2; // 342px
+  const ACTION_GAP  = 42;
+
+  const heading  = document.querySelector('.heading');
+  const wordClip = document.querySelector('.word-clip');
+  const action   = document.querySelector('.action');
+  const frame    = document.querySelector('.frame');
+  const el       = document.getElementById('word-span');
+
+  const WORDS = [
+    { text: 'happening', color: '#fe2c55' },
+    { text: 'Inspiring', color: '#25f4ee' },
+    { text: 'trending',  color: '#6633f5' },
+  ];
+  let idx = 0;
+
+  // ── Text measurement ─────────────────────────────────────────
+  function measureText(text, fontSize) {
+    const s = document.createElement('span');
+    s.style.cssText =
+      'position:absolute;visibility:hidden;white-space:nowrap;' +
+      `font:700 ${fontSize}px "TikTok Sans",system-ui,sans-serif;`;
+    s.textContent = text;
+    document.body.appendChild(s);
+    const w = s.getBoundingClientRect().width;
+    document.body.removeChild(s);
+    return w;
+  }
+
+  // ── Action block positioning ──────────────────────────────────
+  function updateActionPosition() {
+    const frameTop      = frame.getBoundingClientRect().top;
+    const headingBottom = heading.getBoundingClientRect().bottom;
+    action.style.top = (headingBottom - frameTop + ACTION_GAP) + 'px';
+  }
+
+  // ── Font size ─────────────────────────────────────────────────
+  function applyFontSize(fontSize) {
+    currentFontSize = fontSize;
+    heading.style.fontSize = fontSize + 'px';
+    wordClip.style.minWidth = measureText('happening', fontSize) + 'px';
+    const fullW = measureText("See what's happening", fontSize);
+    if (fullW > MAX_WIDTH) {
+      heading.style.whiteSpace = 'normal';
+      heading.style.width      = MAX_WIDTH + 'px';
+      heading.style.textAlign  = 'center';
+    } else {
+      heading.style.whiteSpace = 'nowrap';
+      heading.style.width      = 'auto';
+      heading.style.textAlign  = '';
+    }
+    requestAnimationFrame(updateActionPosition);
+  }
+
+  document.fonts.ready.then(() => applyFontSize(currentFontSize));
+
+  // ── Shared helpers ────────────────────────────────────────────
+  function setWord(i) {
+    el.textContent = WORDS[i].text;
+    el.style.color = WORDS[i].color;
+  }
+
+  // ── CAROUSEL mode ─────────────────────────────────────────────
+  let t1 = null, t2 = null, t3 = null;
+
+  function stopCarousel() {
+    clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+  }
+
+  function carousel() {
+    t1 = setTimeout(() => {
+      el.className = 'word-span word-exit';
+      t2 = setTimeout(() => {
+        idx = (idx + 1) % WORDS.length;
+        setWord(idx);
+        el.className = 'word-span word-enter';
+        t3 = setTimeout(() => {
+          el.className = 'word-span word-visible';
+          if (mode === 'carousel') carousel();
+        }, 400);
+      }, 300);
+    }, displayDuration);
+  }
+
+  // ── TYPEWRITER mode ───────────────────────────────────────────
+  const TW_TYPE_MS   = 80;   // ms per character typed
+  const TW_DELETE_MS = 40;   // ms per character deleted
+  let twTimer = null;
+
+  function stopTypewriter() { clearTimeout(twTimer); }
+
+  function typewriter() {
+    if (mode !== 'typewriter') return;
+    const word = WORDS[idx].text;
+    el.style.color   = WORDS[idx].color;
+    el.className     = 'word-span word-visible';
+
+    // Type forward
+    let i = 0;
+    function typeNext() {
+      if (mode !== 'typewriter') return;
+      el.textContent = word.slice(0, ++i);
+      if (i < word.length) {
+        twTimer = setTimeout(typeNext, TW_TYPE_MS);
+      } else {
+        // Pause then delete
+        twTimer = setTimeout(deleteNext, displayDuration);
+      }
+    }
+
+    // Delete backward
+    let d = word.length;
+    function deleteNext() {
+      if (mode !== 'typewriter') return;
+      el.textContent = word.slice(0, --d);
+      if (d > 0) {
+        twTimer = setTimeout(deleteNext, TW_DELETE_MS);
+      } else {
+        // Next word
+        idx = (idx + 1) % WORDS.length;
+        twTimer = setTimeout(typewriter, 400);
+      }
+    }
+
+    typeNext();
+  }
+
+  // ── Mode switching ────────────────────────────────────────────
+  function startMode(newMode) {
+    stopCarousel();
+    stopTypewriter();
+    mode = newMode;
+
+    // Update toggle button styles
+    document.getElementById('btn-typewriter').classList.toggle('active', mode === 'typewriter');
+    document.getElementById('btn-carousel').classList.toggle('active',   mode === 'carousel');
+
+    // Reset to clean state
+    el.className   = 'word-span word-visible';
+    el.textContent = '';
+
+    if (mode === 'carousel') {
+      setWord(idx);
+      carousel();
+    } else {
+      typewriter();
+    }
+  }
+
+  // Boot in typewriter mode
+  startMode('typewriter');
+
+  // ── Controls wiring ──────────────────────────────────────────
+  document.getElementById('btn-typewriter').addEventListener('click', () => startMode('typewriter'));
+  document.getElementById('btn-carousel').addEventListener('click',   () => startMode('carousel'));
+
+  // Speed slider — takes effect immediately in both modes
+  const speedSlider = document.getElementById('speed-slider');
+  const speedVal    = document.getElementById('speed-val');
+  speedSlider.addEventListener('input', () => {
+    displayDuration = +speedSlider.value;
+    speedVal.textContent = displayDuration + ' ms';
+    // Restart current mode at new speed
+    startMode(mode);
+  });
+
+  // Font size slider
+  const fontSlider = document.getElementById('font-slider');
+  const fontVal    = document.getElementById('font-val');
+  fontSlider.addEventListener('input', () => {
+    fontVal.textContent = fontSlider.value + ' px';
+    document.fonts.ready.then(() => applyFontSize(+fontSlider.value));
+  });
+</script>
+</body>
+</html>
